@@ -7,7 +7,7 @@ pub struct Vec3 {
 
 //geometric clarity
 #[allow(dead_code)]
-type Point3 = Vec3;
+pub type Point3 = Vec3;
 
 impl Vec3 {
     pub fn from(e1: f64, e2: f64, e3: f64) -> Vec3 {
@@ -95,6 +95,14 @@ impl ops::Add<&Vec3> for Vec3 {
     }
 }
 
+impl ops::Add<Vec3> for Vec3 {
+    type Output = Vec3;
+    #[inline]
+    fn add(self, rhs: Vec3) -> Self::Output {
+        self + &rhs
+    }
+}
+
 impl ops::Sub<&Vec3> for Vec3 {
     type Output = Vec3;
     #[inline]
@@ -104,6 +112,14 @@ impl ops::Sub<&Vec3> for Vec3 {
             self.e[1] - rhs.e[1],
             self.e[2] - rhs.e[2],
         )
+    }
+}
+
+impl ops::Sub<Vec3> for Vec3 {
+    type Output = Vec3;
+    #[inline]
+    fn sub(self, rhs: Vec3) -> Self::Output {
+        self - &rhs
     }
 }
 
@@ -159,7 +175,7 @@ pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
     )
 }
 
-#[inline]
+#[inline] // if clone trait implemented, *v deref would be copy?
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     *v / v.length()
 }
