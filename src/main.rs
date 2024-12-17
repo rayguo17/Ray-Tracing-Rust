@@ -1,5 +1,10 @@
+use std::{f64::INFINITY, rc::Rc};
+
 use color::{write_color, Color};
+use hitable::{HitRecord, Hittable};
+use hittable_list::HittableList;
 use ray::Ray;
+use sphere::Sphere;
 use vec3::{dot, unit_vector, Point3, Vec3};
 
 pub mod color;
@@ -8,6 +13,7 @@ pub mod hittable_list;
 pub mod ray;
 pub mod sphere;
 pub mod vec3;
+pub mod rtweekend;
 
 #[allow(dead_code)]
 fn is_clone<T: Clone>() {}
@@ -25,15 +31,17 @@ fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
     }
 }
 
-fn ray_color(r: &Ray) -> Color {
+fn ray_color(r: &Ray, world: &HittableList) -> Color {
     // depends on the ray direction return diff color.
-    let t = hit_sphere(&Point3::from(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        // the distance between viewport and point on sphere.
-        let N = unit_vector(&(r.at(t) - Vec3::from(0.0, 0.0, -1.0)));
-        return 0.5 * Color::from(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0);
+    let mut rec = HitRecord::new();
+    if world.hit(r, 0.0, INFINITY, &mut rec){
+        return 0.5 * ( Color::from(1.0*rec.normal.x(),1.0 *rec.normal.y(),1.0 * rec.normal.z()));
     }
-
+    // let t = hit_sphere(&Point3::from(0.0, 0.0, -1.0), 0.5, r);
+    // if (t >0.0){
+    //     let N = unit_vector(&(r.at(t) - &Vec3::from(0.0,0.0,-1.0)));
+    //     return 0.5 * Color::from(N.x() + 1.0, N.y()+1.0, N.z()+1.0);
+    // }
     let unit_direction = unit_vector(r.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     let white = Color::from(1.0, 1.0, 1.0);
@@ -46,6 +54,10 @@ fn main() {
     let image_width = 400;
     let mut image_height = (image_width as f64 / aspect_ratio) as i32;
     image_height = image_height.max(1);
+
+    let mut world = HittableList::empty_new();
+    world.add(Rc::new(Sphere::new(Point3::from(0.0, 0.0, -1.0), 0.5)));
+    //world.add(Rc::new(Sphere::new(Vec3::from(0.0, -100.5, -1.0),100.0)));
 
     let viewport_height = 2.0;
     let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
@@ -72,7 +84,7 @@ fn main() {
             let pixel_center = pixel00_loc + i as f64 * pixel_delta_u + j as f64 * pixel_delta_v;
             let ray_direction = pixel_center - camera_center; // direction should be unit vector.
             let r = Ray::from(&camera_center, &ray_direction);
-            let pixel_color = ray_color(&r); // no reflection, directly the color of ray.
+            let pixel_color = ray_color(&r,&world); // no reflection, directly the color of ray.
             write_color(&pixel_color);
         }
     }

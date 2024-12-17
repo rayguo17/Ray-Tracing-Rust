@@ -1,5 +1,7 @@
 use crate::ray::Ray;
 use crate::vec3::{dot, Point3, Vec3};
+
+#[derive(Clone, Copy)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
@@ -15,6 +17,14 @@ impl HitRecord {
         } else {
             -*outward_normal
         };
+    }
+    pub fn new()->Self{
+        HitRecord{
+            p:Point3::new(),
+            normal: Vec3::new(),
+            t:0.0,
+            front_face:false // default false.
+        }
     }
 }
 

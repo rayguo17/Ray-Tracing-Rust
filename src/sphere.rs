@@ -28,7 +28,7 @@ impl Hittable for Sphere {
         let oc = self.center - r.origin();
         let a = r.direction().length_squared();
         let h = dot(r.direction(), &oc);
-        let c = oc.length_squared() - self.radius * self.radius;
+        let c = dot(&oc,&oc) - self.radius * self.radius;
 
         let discriminant = h * h - a * c;
         if discriminant < 0.0 {
@@ -36,16 +36,18 @@ impl Hittable for Sphere {
         }
         let srtd = discriminant.sqrt();
         let mut root = (h - srtd) / a;
-        if root < t_min || t_max <= root {
-            root = (h + srtd) / a; // try the other root
-            if root < t_min || t_max <= root {
-                return false; // no root in ranges.
-            }
-        }
+        // if root < t_min || t_max <= root {
+        //     root = (h + srtd) / a; // try the other root
+        //     if root < t_min || t_max <= root {
+        //         return false; // no root in ranges.
+        //     }
+        // }
         rec.t = root;
         rec.p = r.at(rec.t);
+        
         let outward_normal = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(r, &outward_normal);
+        rec.normal = outward_normal;
+        //rec.set_face_normal(r, &outward_normal);
         return true;
     }
 }
