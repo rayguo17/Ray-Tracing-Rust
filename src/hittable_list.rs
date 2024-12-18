@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::hitable::{HitRecord, Hittable};
+use crate::{hitable::{HitRecord, Hittable}, interval::Interval};
 
 pub struct HittableList {
     pub objects: Vec<Rc<dyn Hittable>>, // i will just assume the reference will not change, try to refactor when there are needs.
@@ -21,12 +21,12 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &crate::ray::Ray, t_min: f64, t_max: f64, rec: &mut crate::hitable::HitRecord) -> bool {
+    fn hit(&self, r: &crate::ray::Ray, ray_t: &Interval, rec: &mut crate::hitable::HitRecord) -> bool {
         let mut temp_rec = HitRecord::new();
         let mut hit_anything = false;
-        let mut  closest_so_far = t_max;
+        let mut  closest_so_far = ray_t.max;
         for obj in self.objects.iter(){
-            if obj.hit(r, t_min, closest_so_far, &mut temp_rec){
+            if obj.hit(r, &Interval::from(ray_t.min, closest_so_far), &mut temp_rec){
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec;  // because of copy, this would be copied.

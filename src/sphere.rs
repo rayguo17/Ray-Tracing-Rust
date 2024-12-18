@@ -1,7 +1,8 @@
 use crate::{
     hitable::{HitRecord, Hittable},
     ray::Ray,
-    vec3::{dot, Point3},
+    vec3::{dot, unit_vector, Point3},
+    interval::Interval
 };
 pub struct Sphere {
     center: Point3,
@@ -24,7 +25,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, ray_t: &Interval, rec: &mut HitRecord) -> bool {
         let oc = self.center - r.origin();
         let a = r.direction().length_squared();
         let h = dot(r.direction(), &oc);
@@ -36,18 +37,18 @@ impl Hittable for Sphere {
         }
         let srtd = discriminant.sqrt();
         let mut root = (h - srtd) / a;
-        // if root < t_min || t_max <= root {
-        //     root = (h + srtd) / a; // try the other root
-        //     if root < t_min || t_max <= root {
-        //         return false; // no root in ranges.
-        //     }
-        // }
+        if !ray_t.surrounds(root) {
+            root = (h + srtd) / a; // try the other root
+            if !ray_t.surrounds(root) {
+                return false; // no root in ranges.
+            }
+        }
         rec.t = root;
         rec.p = r.at(rec.t);
         
-        let outward_normal = (rec.p - self.center) / self.radius;
-        rec.normal = outward_normal;
-        //rec.set_face_normal(r, &outward_normal);
+        let outward_normal = unit_vector(&(rec.p - self.center)) ; // self.radius
+        //rec.normal = outward_normal;
+        rec.set_face_normal(r, &outward_normal);
         return true;
     }
 }
