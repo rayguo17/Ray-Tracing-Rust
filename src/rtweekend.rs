@@ -7,6 +7,12 @@ pub fn degrees_to_radians(degrees:f64)->f64{
     return degrees * PI / 180.0;
 }
 
+#[inline]
 pub fn random_double() -> f64 {
-    return 1.0; 
+    return rand::random(); 
+}
+
+#[inline]
+pub fn random_double_range(min:f64, max:f64) -> f64 {
+    return min + (max-min)*random_double();
 }

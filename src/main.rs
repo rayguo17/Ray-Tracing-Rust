@@ -1,13 +1,9 @@
-use std::{f64::INFINITY, rc::Rc};
+use std::rc::Rc;
 
 use camera::Camera;
-use color::{write_color, Color};
-use hitable::{HitRecord, Hittable};
 use hittable_list::HittableList;
-use interval::Interval;
-use ray::Ray;
 use sphere::Sphere;
-use vec3::{dot, unit_vector, Point3, Vec3};
+use vec3::{ Point3, Vec3};
 
 pub mod color;
 pub mod hitable;
