@@ -1,13 +1,20 @@
+use std::rc::Rc;
+
 use crate::interval::Interval;
+use crate::material::{Dummy, Material};
 use crate::ray::Ray;
 use crate::vec3::{dot, Point3, Vec3};
 
-#[derive(Clone, Copy)]
+
+
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat: Rc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
+
 }
 
 impl HitRecord {
@@ -23,6 +30,8 @@ impl HitRecord {
         HitRecord{
             p:Point3::new(),
             normal: Vec3::new(),
+            // TODO: initialize Material Pointer.
+            mat: Rc::new(Dummy{}),  // Waht is the prefered way of implementing a dummy class object.
             t:0.0,
             front_face:false // default false.
         }

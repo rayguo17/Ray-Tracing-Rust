@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::rtweekend::{random_double, random_double_range};
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
     e: [f64; 3],
@@ -16,6 +18,12 @@ impl Vec3 {
     pub fn new() -> Vec3 {
         Vec3 { e: [0.0, 0.0, 0.0] }
     }
+    pub fn random()->Vec3{
+        return Vec3 { e: [random_double(),random_double(),random_double()] };
+    }
+    pub fn random_rng(min:f64, max:f64) -> Vec3{
+        return Vec3{ e: [random_double_range(min, max),random_double_range(min, max), random_double_range(min, max)] }
+    }
     pub fn x(&self) -> f64 {
         self.e[0] // primitive type copy
     }
@@ -30,6 +38,10 @@ impl Vec3 {
     }
     pub const fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+    }
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.e[0].abs() < s && self.e[1].abs() < s && self.e[2].abs() < s
     }
 }
 
@@ -151,6 +163,7 @@ impl ops::Mul<Vec3> for f64 {
     }
 }
 
+
 impl ops::Mul<f64> for Vec3 {
     type Output = Vec3;
     #[inline]
@@ -186,4 +199,31 @@ pub fn cross(v1: &Vec3, v2: &Vec3) -> Vec3 {
 #[inline] // if clone trait implemented, *v deref would be copy?
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     *v / v.length()
+}
+
+#[inline]
+pub fn random_unit_vector() -> Vec3{
+    loop {
+        let p = Vec3::random(); // randomly choose the direction of the reflected ray.
+        let lensq = p.length_squared(); //
+        if 1e-160 < lensq && lensq <= 1.0{ // prevent super small lens which likely to underflow to zero.
+            return p / lensq.sqrt();
+        }
+    }
+    
+}
+
+#[inline]
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere = random_unit_vector();
+    if dot(&on_unit_sphere,normal)>0.0{
+        on_unit_sphere
+    }else{
+        -on_unit_sphere
+    }
+}
+
+#[inline]
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3{
+    return *v - 2.0 * dot(v, n) * (*n)
 }

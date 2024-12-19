@@ -1,12 +1,12 @@
+use std::rc::Rc;
+
 use crate::{
-    hitable::{HitRecord, Hittable},
-    ray::Ray,
-    vec3::{dot, unit_vector, Point3},
-    interval::Interval
+    hitable::{HitRecord, Hittable}, interval::Interval, material::Material, ray::Ray, vec3::{dot, unit_vector, Point3}
 };
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    mat: Rc<dyn Material>
 }
 
 pub fn maxnumf64(a: f64, b: f64) -> f64 {
@@ -18,9 +18,9 @@ pub fn maxnumf64(a: f64, b: f64) -> f64 {
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: Rc<dyn Material>) -> Self {
         let radius = maxnumf64(0.0, radius);
-        Self { center, radius }
+        Self { center, radius,  mat} // TODO: initialize Material
     }
 }
 
@@ -49,6 +49,7 @@ impl Hittable for Sphere {
         let outward_normal = unit_vector(&(rec.p - self.center)) ; // self.radius
         //rec.normal = outward_normal;
         rec.set_face_normal(r, &outward_normal);
+        rec.mat = Rc::clone(&self.mat); // create a new reference counter smart pointer.
         return true;
     }
 }

@@ -1,12 +1,13 @@
 use std::f64::INFINITY;
 
-use crate::{color::{write_color, Color}, hitable::{HitRecord, Hittable}, hittable_list::HittableList, interval::Interval, ray::Ray, rtweekend::random_double, vec3::{unit_vector, Point3, Vec3}};
+use crate::{color::{write_color, Color}, hitable::{HitRecord, Hittable}, hittable_list::HittableList, interval::Interval, ray::Ray, rtweekend::random_double, vec3::{random_on_hemisphere, unit_vector, Point3, Vec3}};
 
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth:i32,
     image_height: i32,
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
     center: Point3,  // Camera center
@@ -17,15 +18,26 @@ pub struct Camera {
 
 impl Default for Camera{
     fn default() -> Self {
-        Camera { aspect_ratio: 1.0, image_width: 100, image_height: 0, center: Point3::new(), pixel00_loc: Point3::new(), pixel_delta_u: Vec3::new(), pixel_delta_v: Vec3::new(), samples_per_pixel: 10, pixel_samples_scale: 1.0 }
+        Camera { max_depth:10,aspect_ratio: 1.0, image_width: 100, image_height: 0, center: Point3::new(), pixel00_loc: Point3::new(), pixel_delta_u: Vec3::new(), pixel_delta_v: Vec3::new(), samples_per_pixel: 10, pixel_samples_scale: 1.0 }
     }
 }
 
 impl Camera {
-    fn ray_color(r :&Ray, world: &HittableList) -> Color{
+    fn ray_color(r :&Ray, depth: i32, world: &HittableList) -> Color{
+        if depth <=0{
+            return Color::new(); // zero by default
+        }
         let mut rec = HitRecord::new();
-        if world.hit(r, &Interval::from(0.0, INFINITY), &mut rec){
-            return 0.5 * (rec.normal + Color::from(1.0, 1.0, 1.0));
+        if world.hit(r, &Interval::from(0.001, INFINITY), &mut rec){
+            let mut scattered = Ray::new();
+            let mut attenuation = Color::new();
+            if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered){
+                return attenuation * Self::ray_color(&scattered, depth-1, world);
+            }
+            return Color::new();
+            // let direction = random_on_hemisphere(&rec.normal) + rec.normal;
+            // return 0.5 * Self::ray_color(&Ray::from(&rec.p, &direction),depth-1, world);
+            //return 0.5 * (rec.normal + Color::from(1.0, 1.0, 1.0));
         }
         let unit_direction = unit_vector(r.direction());
         let white = Color::from(1.0, 1.0, 1.0);
@@ -54,7 +66,7 @@ impl Camera {
                 let mut pixel_color = Color::new();
                 for _ in 0..self.samples_per_pixel{
                     let r = self.get_ray(i, j);
-                    pixel_color += &Self::ray_color(&r, world);
+                    pixel_color += &Self::ray_color(&r, self.max_depth,world);
                 }
                 write_color(&(pixel_color * self.pixel_samples_scale));
             }

@@ -29,7 +29,7 @@ impl Hittable for HittableList {
             if obj.hit(r, &Interval::from(ray_t.min, closest_so_far), &mut temp_rec){
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *rec = temp_rec;  // because of copy, this would be copied.
+                *rec = temp_rec.clone();  // because of copy, this would be copied.
                 //temp_rec = HitRecord::new(); // it is moved, so we need to reallocate
             }
         }
