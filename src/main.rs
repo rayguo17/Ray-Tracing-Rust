@@ -3,7 +3,7 @@ use std::rc::Rc;
 use camera::Camera;
 use color::Color;
 use hittable_list::HittableList;
-use material::{Lambertian, Material, Metal};
+use material::{Dielectric, Lambertian, Material, Metal};
 use sphere::Sphere;
 use vec3::{ Point3, Vec3};
 
@@ -28,12 +28,14 @@ fn main() {
 
     let material_ground = Rc::new(Lambertian::new(&Color::from(0.8, 0.8, 0.0)));
     let material_center = Rc::new(Lambertian::new(&Color::from(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Metal::new(&Color::from(0.8, 0.8, 0.8)));
-    let material_right = Rc::new(Metal::new(&Color::from(0.8, 0.6, 0.2)));
+    let material_left = Rc::new(Dielectric::new(1.50));
+    let material_bubble = Rc::new(Dielectric::new(1.00/1.50));
+    let material_right = Rc::new(Metal::new(&Color::from(0.8, 0.6, 0.2),1.0));
 
     world.add(Rc::new(Sphere::new(Point3::from(0.0, -100.5, 1.0), 100.0, Rc::clone(&material_ground) as Rc<dyn Material>)));
     world.add(Rc::new(Sphere::new(Point3::from(0.0, 0.0, -1.2), 0.5, Rc::clone(&material_center) as Rc<dyn Material>)));
     world.add(Rc::new(Sphere::new(Point3::from(-1.0, 0.0, -1.0),0.5, Rc::clone(&material_left) as Rc<dyn Material>)));
+    world.add(Rc::new(Sphere::new(Point3::from(-1.0, 0.0, -1.0), 0.4, Rc::clone(&material_bubble) as Rc<dyn Material>)));
     world.add(Rc::new(Sphere::new(Point3::from(1.0, 0.0, -1.0),0.5, Rc::clone(&material_right) as Rc<dyn Material>)));
     
 
